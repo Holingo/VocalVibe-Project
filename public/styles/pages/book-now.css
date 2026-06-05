@@ -1,0 +1,326 @@
+/* --- GŁÓWNY UKŁAD (Treść + Sidebar) --- */
+.book-now-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0 0 1.5rem 0;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #fff, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- KARTY (Sale i Produkty) --- */
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.room-card {
+    background: rgba(28, 26, 36, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.room-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(168, 85, 247, 0.4);
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.1);
+}
+
+.room-image {
+    height: 180px;
+    background-color: #13111c;
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.room-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.room-info {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.room-header h2 {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.room-rating {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.room-desc {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0 0 1.25rem 0;
+    flex-grow: 1;
+}
+
+.room-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.room-price {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.room-price .unit {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* --- PRZYCISKI --- */
+.btn-book, .btn-proceed, .btn-add-cart, .btn-add {
+    background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn-book:hover, .btn-proceed:hover, .btn-add-cart:hover, .btn-add:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+}
+
+/* Przycisk "+" w menu */
+.btn-add {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- BOCZNY PANEL (SIDEBAR) --- */
+.booking-sidebar {
+    background: rgba(28, 26, 36, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 1.75rem;
+    position: sticky;
+    top: 1rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-section h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 1.25rem 0;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-divider {
+    border: 0;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    margin: 1.5rem 0;
+}
+
+/* Formularze w sidebarze */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+}
+
+.custom-select, .custom-input {
+    width: 100%;
+    background-color: rgba(19, 17, 28, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.custom-select:focus, .custom-input:focus {
+    border-color: #a855f7;
+}
+
+/* Liczniki (Osoby/Czas) */
+.row-group {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.row-group label { margin: 0; }
+
+.counter-widget {
+    display: flex;
+    align-items: center;
+    background-color: rgba(19, 17, 28, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.counter-controls button {
+    background: transparent;
+    border: none;
+    color: #a855f7;
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.counter-controls button:hover { background: rgba(168, 85, 247, 0.1); }
+
+.counter-controls span {
+    padding: 0 0.5rem;
+    color: #ffffff;
+    font-weight: 700;
+    min-width: 30px;
+    text-align: center;
+    display: inline-block;
+}
+
+/* Lista zamówień (Paragon) */
+.order-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.order-list li {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.9rem;
+}
+
+.order-list li:last-child { border-bottom: none; }
+
+.order-list .qty {
+    color: #a855f7;
+    font-weight: 700;
+    width: 30px;
+}
+
+.order-list .name {
+    color: #e5e7eb;
+    flex-grow: 1;
+}
+
+.order-list .price {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Kalkulator podsumowania */
+.price-calculator .calc-row {
+    display: flex;
+    justify-content: space-between;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    margin-bottom: 0.6rem;
+}
+
+.price-calculator .calc-row span:last-child {
+    color: #e5e7eb;
+    font-weight: 500;
+}
+
+.calc-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 800;
+}
+
+.calc-total span:first-child {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.total-amount {
+    font-size: 1.6rem;
+    background: linear-gradient(90deg, #a855f7, #d946ef);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.btn-proceed {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+}
+
+/* RWD */
+@media screen and (max-width: 1100px) {
+    .book-now-layout { grid-template-columns: 1fr; }
+    .booking-sidebar { position: static; margin-top: 2rem; }
+}

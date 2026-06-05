@@ -1,0 +1,150 @@
+/* --- Animowane i pulsujące neony w tle (Klimat Vibe Noir) --- */
+body.login-page {
+  background:
+          radial-gradient(circle at 15% 20%, rgba(217, 70, 239, 0.22) 0%, transparent 50%),
+          radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 50%),
+          var(--color-bg);
+  background-size: 140% 140%;
+  background-position: 0% 0%;
+
+  /* Płynne, nieskończone zapętlenie animacji */
+  animation: pulseNeonBackground 12s ease-in-out infinite alternate;
+}
+
+@keyframes pulseNeonBackground {
+  0% {
+    background-position: 0% 0%;
+    background-size: 140% 140%;
+  }
+  50% {
+    background-position: 50% 100%;
+    background-size: 110% 130%;
+  }
+  100% {
+    background-position: 100% 0%;
+    background-size: 150% 150%;
+  }
+}
+
+/* --- Stylizacja formularza (Odziedziczona struktura po global.css) --- */
+.auth-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Górny neonowy pasek dekoracyjny */
+.auth-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+}
+
+.auth-heading {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-heading h1 {
+  margin: 0.2rem 0;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.auth-subtitle {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* --- Poprawka odstępów dzięki .input-group --- */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  /* Odpowiedni dystans między Email a Hasłem */
+  margin-bottom: 1.25rem;
+}
+
+.input-group label {
+  /* Drobny odstęp tekstu labela od samego inputa pod nim */
+  margin-bottom: 0.45rem;
+}
+
+.btn-submit {
+  width: 100%;
+  /* Odsunięcie przycisku logowania od pola z hasłem */
+  margin-top: 0.5rem;
+}
+
+/* --- Sekcja Google OAuth2 --- */
+.auth-separator {
+  text-align: center;
+  margin: 1.25rem 0;
+  position: relative;
+}
+
+.auth-separator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border);
+  z-index: 1;
+}
+
+.auth-separator span {
+  background: var(--color-surface);
+  padding: 0 0.75rem;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  position: relative;
+  z-index: 2;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  background: #ffffff;
+  color: #1d1c24;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
+  box-sizing: border-box;
+}
+
+.btn-google:hover {
+  background-color: #f1f1f5;
+  transform: translateY(-1px);
+}
+
+.google-icon {
+  display: block;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
