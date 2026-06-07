@@ -13,6 +13,26 @@ class DashboardController extends AppController {
         $this->ensureAuthenticated();
     }
 
+    public function myBookings() {
+        // Ta metoda nie była uruchamiana przez routing index.php?page=my-bookings
+        // Zostawiamy ją jako zabezpieczenie strukturalne
+        $this->ensureAuthenticated();
+
+        $bookingRepository = new BookingRepository();
+        $orderRepository = new OrderRepository();
+
+        $bookings = $bookingRepository->getBookingsByUserId($_SESSION['user_id']);
+
+        foreach ($bookings as &$booking) {
+            $booking['products'] = $orderRepository->getOrderSummary($booking['id']);
+        }
+
+        $this->render('dashboard', [
+            'page' => 'my-bookings',
+            'bookings' => $bookings
+        ]);
+    }
+
     public function index() {
         $page = $_GET['page'] ?? 'book-now';
 
@@ -37,20 +57,30 @@ class DashboardController extends AppController {
 
             case 'my-bookings':
                 $bookingRepository = new BookingRepository();
-                $data['bookings'] = $bookingRepository->getBookingsByUserId($_SESSION['user_id']);
+                $orderRepository = new OrderRepository();
+
+                // 1. Pobieramy bazowe rezerwacje zalogowanego użytkownika
+                $bookings = $bookingRepository->getBookingsByUserId($_SESSION['user_id']);
+
+                // 2. NAPRAWIONE: Pobieramy listę produktów barowych dla KAŻDEJ rezerwacji z osobna
+                foreach ($bookings as &$booking) {
+                    $booking['products'] = $orderRepository->getOrderSummary($booking['id']);
+                }
+                unset($booking); // bezpieczne zniszczenie referencji pętli
+
+                $data['bookings'] = $bookings;
                 break;
 
             case 'menu':
                 $bookingRepository = new BookingRepository();
-                // Pobieramy szczegóły rezerwacji, nie tylko ID
-                $activeBooking = $bookingRepository->getActiveBookingDetails($_SESSION['user_id']);
+                $activeBooking = $bookingRepository->getActiveBookingByUserId($_SESSION['user_id']);
 
                 if (!$activeBooking) {
                     $data['no_booking'] = true;
                 } else {
                     $data['products'] = (new ProductsRepository())->getProducts();
-                    $data['currentBooking'] = $activeBooking;
-                    // Pobieramy paragon
+                    $data['currentBookingId'] = $activeBooking['id'];
+                    // Pobieramy podsumowanie paragonu dla aktywnej rezerwacji
                     $data['orderSummary'] = (new OrderRepository())->getOrderSummary($activeBooking['id']);
                 }
                 break;

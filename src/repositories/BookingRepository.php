@@ -6,7 +6,18 @@ class BookingRepository extends Repository {
 
     public function getBookingsByUserId(int $userId): array {
         $stmt = $this->database->connect()->prepare('
-            SELECT b.*, r.name as room_name, r.image_url 
+            SELECT 
+                b.id,
+                b.room_id,
+                b.user_id,
+                b.start_time,
+                b.end_time,
+                b.total_price,
+                b.status,
+                b.attendees, -- Pobiera liczbę gości z tabeli bookings
+                b.start_time::date AS booking_date, 
+                r.name as room_name, 
+                r.image_url 
             FROM bookings b
             JOIN rooms r ON b.room_id = r.id
             WHERE b.user_id = :user_id
@@ -17,15 +28,27 @@ class BookingRepository extends Repository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getBookingById(int $id) {
+        $stmt = $this->database->connect()->prepare('
+            SELECT 
+                *,
+                start_time::date AS booking_date 
+            FROM bookings 
+            WHERE id = :id
+        ');
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function getActiveBookingDetails(int $userId) {
         $stmt = $this->database->connect()->prepare('
             SELECT b.id, b.start_time, b.end_time, r.name as room_name 
             FROM bookings b
             JOIN rooms r ON b.room_id = r.id
-            WHERE b.user_id = :user_id AND b.status = :status
+            WHERE b.user_id = :user_id AND b.status = \'Active\'
             ORDER BY b.start_time ASC LIMIT 1
         ');
-        $stmt->execute([':user_id' => $userId, ':status' => 'Active']);
+        $stmt->execute([':user_id' => $userId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -63,10 +86,10 @@ class BookingRepository extends Repository {
         return array_unique($bookedHours);
     }
 
-    public function createBooking(int $userId, int $roomId, string $startTime, string $endTime, float $totalPrice) {
+    public function createBooking(int $userId, int $roomId, string $startTime, string $endTime, float $totalPrice, int $attendees = 2) {
         $stmt = $this->database->connect()->prepare('
-            INSERT INTO bookings (user_id, room_id, start_time, end_time, total_price, status)
-            VALUES (:user_id, :room_id, :start_time, :end_time, :total_price, \'Active\')
+            INSERT INTO bookings (user_id, room_id, start_time, end_time, total_price, attendees, status)
+            VALUES (:user_id, :room_id, :start_time, :end_time, :total_price, :attendees, \'Active\')
             RETURNING id
         ');
 
@@ -75,9 +98,40 @@ class BookingRepository extends Repository {
             ':room_id' => $roomId,
             ':start_time' => $startTime,
             ':end_time' => $endTime,
-            ':total_price' => $totalPrice
+            ':total_price' => $totalPrice,
+            ':attendees' => $attendees
         ]);
 
-        return $stmt->fetchColumn(); // Zwraca nowe ID rezerwacji
+        return $stmt->fetchColumn();
+    }
+
+    public function deleteBooking(int $id): bool {
+        $db = $this->database->connect();
+        try {
+            $db->beginTransaction();
+
+            $stmt = $db->prepare('SELECT id FROM orders WHERE booking_id = :bId');
+            $stmt->execute(['bId' => $id]);
+            $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($order) {
+                $stmt = $db->prepare('DELETE FROM order_items WHERE order_id = :oId');
+                $stmt->execute(['oId' => $order['id']]);
+
+                $stmt = $db->prepare('DELETE FROM orders WHERE id = :oId');
+                $stmt->execute(['oId' => $order['id']]);
+            }
+
+            $stmt = $db->prepare('DELETE FROM bookings WHERE id = :id');
+            $success = $stmt->execute(['id' => $id]);
+
+            $db->commit();
+            return $success;
+        } catch (\Exception $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            return false;
+        }
     }
 }

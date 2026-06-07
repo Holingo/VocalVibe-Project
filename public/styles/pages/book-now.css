@@ -324,3 +324,95 @@
     .book-now-layout { grid-template-columns: 1fr; }
     .booking-sidebar { position: static; margin-top: 2rem; }
 }
+
+/* --- WYSKAKUJĄCE OKNO (MODAL OVERLAY) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 12, 0.85); /* Ciemne tło maskujące */
+    backdrop-filter: blur(8px); /* Rozmycie elementów pod spodem */
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000; /* Gwarancja, że wyskoczy nad sidebar i nawigację */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    pointer-events: auto;
+}
+
+/* KLUCZOWE: Ukrywanie modala, gdy posiada klasę .hidden */
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none !important; /* Całkowite wycięcie z widoku, gdy nieaktywny */
+}
+
+/* KONTENER TREŚCI MODALA */
+.modal-content {
+    background: #1c1a24;
+    border: 1px solid #2a2836;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 840px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #2a2836;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* PRZYCISK ZAMYKANIA (X) */
+.btn-close {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.75rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.btn-close:hover {
+    color: #ef4444;
+}
+
+/* PRZEWIJALNE WNĘTRZE MODALA */
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto; /* Zapewnia scrollbar, gdy menu jest długie */
+}
+
+/* Estetyczny scrollbar dla modala */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background-color: #2a2836;
+    border-radius: 10px;
+}

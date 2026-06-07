@@ -42,6 +42,7 @@ CREATE TABLE bookings (
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE NOT NULL,
     total_price DECIMAL(10, 2),
+    attendees INT NOT NULL DEFAULT 2,
     status VARCHAR(50) DEFAULT 'Active'
 );
 

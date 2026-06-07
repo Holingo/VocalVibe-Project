@@ -44,6 +44,10 @@ class Routing {
             "controller" => "BookingController",
             "action" => "create"
         ],
+        "booking-cancel" => [
+            "controller" => "BookingController",
+            "action" => "cancel"
+        ],
         "order-add" => [
           "controller" => "OrderController",
           "action" => "add"
