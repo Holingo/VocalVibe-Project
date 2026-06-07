@@ -14,8 +14,6 @@ class DashboardController extends AppController {
     }
 
     public function myBookings() {
-        // Ta metoda nie była uruchamiana przez routing index.php?page=my-bookings
-        // Zostawiamy ją jako zabezpieczenie strukturalne
         $this->ensureAuthenticated();
 
         $bookingRepository = new BookingRepository();
@@ -59,27 +57,29 @@ class DashboardController extends AppController {
                 $bookingRepository = new BookingRepository();
                 $orderRepository = new OrderRepository();
 
-                // 1. Pobieramy bazowe rezerwacje zalogowanego użytkownika
                 $bookings = $bookingRepository->getBookingsByUserId($_SESSION['user_id']);
 
-                // 2. NAPRAWIONE: Pobieramy listę produktów barowych dla KAŻDEJ rezerwacji z osobna
                 foreach ($bookings as &$booking) {
                     $booking['products'] = $orderRepository->getOrderSummary($booking['id']);
                 }
-                unset($booking); // bezpieczne zniszczenie referencji pętli
+                unset($booking);
 
                 $data['bookings'] = $bookings;
                 break;
 
             case 'menu':
                 $bookingRepository = new BookingRepository();
-                $activeBooking = $bookingRepository->getActiveBookingByUserId($_SESSION['user_id']);
+
+                // NAPRAWIONE: Wywołujemy istniejącą metodę z Twojego BookingRepository
+                $activeBooking = $bookingRepository->getActiveBookingDetails($_SESSION['user_id']);
 
                 if (!$activeBooking) {
                     $data['no_booking'] = true;
                 } else {
                     $data['products'] = (new ProductsRepository())->getProducts();
-                    $data['currentBookingId'] = $activeBooking['id'];
+                    // NAPRAWIONE: Przekazujemy całą tablicę jako 'currentBooking' dla menu.php
+                    $data['currentBooking'] = $activeBooking;
+
                     // Pobieramy podsumowanie paragonu dla aktywnej rezerwacji
                     $data['orderSummary'] = (new OrderRepository())->getOrderSummary($activeBooking['id']);
                 }

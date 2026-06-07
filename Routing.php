@@ -4,6 +4,8 @@ require_once 'src/controllers/SecurityController.php';
 require_once 'src/controllers/DashboardController.php';
 require_once 'src/controllers/UsersController.php';
 require_once __DIR__.'/src/controllers/BookingController.php';
+// POPRAWKA 1: Importujemy kontroler zamówień, aby system widział klasę OrderController
+require_once __DIR__.'/src/controllers/OrderController.php';
 
 class Routing {
     private static $instances = [];
@@ -48,9 +50,14 @@ class Routing {
             "controller" => "BookingController",
             "action" => "cancel"
         ],
-        "order-add" => [
-          "controller" => "OrderController",
-          "action" => "add"
+        // POPRAWKA 2: Zmieniamy klucze tras, aby pasowały do ukośników w fetch() z menu.js
+        "order/add" => [
+            "controller" => "OrderController",
+            "action" => "add"
+        ],
+        "order/remove" => [
+            "controller" => "OrderController",
+            "action" => "remove"
         ],
     ];
 
@@ -62,14 +69,24 @@ class Routing {
     }
 
     public static function run(string $path) {
+        // Logika pobierania ścieżki
         $path = trim($path, '/');
 
+        // UWAGA: Twój router dzieli ścieżkę po ukośnikach:
         $pathParts = explode('/', $path);
-        $actionKey = $pathParts[0];
-        $id = null;
 
+        // Zbudujmy pełny actionKey dla tras wielopoziomowych (np. order/add)
+        $actionKey = $pathParts[0];
+        if (isset($pathParts[1]) && !preg_match('/^[0-9]+$/', $pathParts[1])) {
+            $actionKey = $pathParts[0] . '/' . $pathParts[1];
+        }
+
+        $id = null;
+        // Jeśli trzeci lub drugi element jest liczbą, traktujemy go jako ID (np. order/add/5)
         if (isset($pathParts[1]) && preg_match('/^[0-9]+$/', $pathParts[1])) {
             $id = (int)$pathParts[1];
+        } elseif (isset($pathParts[2]) && preg_match('/^[0-9]+$/', $pathParts[2])) {
+            $id = (int)$pathParts[2];
         }
 
         if (array_key_exists($actionKey, self::$routes)) {
