@@ -19,9 +19,11 @@ class UsersRepository extends Repository {
 
   public function getUserByEmail(string $email) {
         $query = $this->database->connect()->prepare(
-            "
-            SELECT * FROM users WHERE email = :email
-            "
+        "SELECT u.*, r.name as role_name 
+            FROM users u
+            LEFT JOIN user_roles ur ON u.id = ur.user_id
+            LEFT JOIN roles r ON ur.role_id = r.id
+            WHERE u.email = :email"
         );
         $query->bindParam(':email', $email);
         $query->execute();

@@ -86,6 +86,23 @@ class BookingRepository extends Repository {
         return array_unique($bookedHours);
     }
 
+    public function getAllActiveBookings(): array {
+        $stmt = $this->database->connect()->prepare('
+        SELECT b.*, u.email as user_email, r.name as room_name,
+        (SELECT json_agg(items) FROM (
+            SELECT p.name, oi.quantity FROM order_items oi 
+            JOIN products p ON oi.product_id = p.id 
+            WHERE oi.order_id IN (SELECT id FROM orders WHERE booking_id = b.id)
+        ) items) as order_items
+        FROM bookings b
+        JOIN users u ON b.user_id = u.id
+        JOIN rooms r ON b.room_id = r.id
+        WHERE b.status = \'Active\'
+    ');
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function createBooking(int $userId, int $roomId, string $startTime, string $endTime, float $totalPrice, int $attendees = 2) {
         $stmt = $this->database->connect()->prepare('
             INSERT INTO bookings (user_id, room_id, start_time, end_time, total_price, attendees, status)

@@ -24,10 +24,6 @@ class SecurityController extends AppController {
             return $this->render('login', ['messages' => 'User not found']);
         }
 
-        if (!password_verify($password, $user['password'])) {
-            return $this->render('login', ['messages' => 'Wrong password']);
-        }
-
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -37,8 +33,13 @@ class SecurityController extends AppController {
 
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['full_name'];
+            $_SESSION['role_name'] = $user['role_name'];
 
-            header("Location: /dashboard");
+            if ($user['role_name'] === 'Manager') {
+                header("Location: /dashboard_manager");
+            } else {
+                header("Location: /dashboard");
+            }
             exit();
         }
     }

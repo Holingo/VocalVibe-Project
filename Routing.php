@@ -4,8 +4,8 @@ require_once 'src/controllers/SecurityController.php';
 require_once 'src/controllers/DashboardController.php';
 require_once 'src/controllers/UsersController.php';
 require_once __DIR__.'/src/controllers/BookingController.php';
-// POPRAWKA 1: Importujemy kontroler zamówień, aby system widział klasę OrderController
 require_once __DIR__.'/src/controllers/OrderController.php';
+require_once __DIR__.'/src/controllers/ManagerController.php';
 
 class Routing {
     private static $instances = [];
@@ -50,7 +50,6 @@ class Routing {
             "controller" => "BookingController",
             "action" => "cancel"
         ],
-        // POPRAWKA 2: Zmieniamy klucze tras, aby pasowały do ukośników w fetch() z menu.js
         "order/add" => [
             "controller" => "OrderController",
             "action" => "add"
@@ -58,6 +57,10 @@ class Routing {
         "order/remove" => [
             "controller" => "OrderController",
             "action" => "remove"
+        ],
+        "dashboard_manager" => [
+            "controller" => "ManagerController",
+            "action" => "index"
         ],
     ];
 
