@@ -85,5 +85,5 @@ Aplikacja jest w pełni skonteneryzowana. Jedyne wymaganie systemowe to zainstal
 
 ### Krok 1: Klonowanie repozytorium i wejście do katalogu
 ```bash
-git clone [https://github.com/lswiszcz/PK-.NET-2025W.git](https://github.com/lswiszcz/PK-.NET-2025W.git)
-cd PK-.NET-2025W/Project
+git clone [https://github.com/Holingo/VocalVibe-Project.git](https://github.com/Holingo/VocalVibe-Project.git)
+cd VocalVibe-Project
