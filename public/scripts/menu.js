@@ -27,10 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI(orderSummary) {
-        // 1. Resetujemy wszystkie liczniki na kafelkach produktów do 0
         document.querySelectorAll('.cart-item-qty').forEach(span => span.textContent = '0');
 
-        // 2. Czyszczenie listy na paragonie bocznym
         if (!orderListContainer) return;
         orderListContainer.innerHTML = '';
 
@@ -42,13 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const price = parseFloat(item.total);
                 totalSum += price;
 
-                // Aktualizacja cyfry na kafelku danego produktu
                 const productQtySpan = document.getElementById(`product-qty-${item.product_id}`);
                 if (productQtySpan) {
                     productQtySpan.textContent = qty;
                 }
 
-                // Dodawanie elementu do paragonu
                 orderListContainer.innerHTML += `
                     <li id="receipt-item-${item.product_id}">
                         <span class="qty">${qty}x</span>
@@ -61,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
             orderListContainer.innerHTML = '<li class="empty-receipt-notice">Brak zamówień barowych.</li>';
         }
 
-        // 3. Aktualizacja sumy końcowej
         if (totalAmountContainer) {
             totalAmountContainer.textContent = `PLN ${totalSum.toFixed(2)}`;
         }

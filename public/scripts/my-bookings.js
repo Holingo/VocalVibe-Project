@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!bookingId) return;
 
-            // Okienko potwierdzające decyzję klienta
             const confirmed = confirm("Czy na pewno chcesz anulować tę rezerwację? Ta operacja jest nieodwracalna.");
             if (!confirmed) return;
 
@@ -21,10 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    // Pobieramy kartę rezerwacji z DOM
                     const card = document.getElementById(`booking-card-${bookingId}`);
                     if (card) {
-                        // Efekt płynnego znikania karty
                         card.style.transition = "all 0.4s ease";
                         card.style.opacity = "0";
                         card.style.transform = "scale(0.9)";
@@ -32,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         setTimeout(() => {
                             card.remove();
 
-                            // Jeśli usunęliśmy ostatnią rezerwację, przeładuj stronę, aby pokazać pusty stan (empty state)
                             const remainingCards = document.querySelectorAll(".booking-card");
                             if (remainingCards.length === 0) {
                                 window.location.reload();

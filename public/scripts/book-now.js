@@ -1,27 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // === 1. ZMIENNE DOM - REZERWACJA SALI ===
     const roomSelect = document.getElementById("room-select");
     const bookButtons = document.querySelectorAll(".btn-book:not(.btn-add-cart)");
 
-    //const displayDuration = document.getElementById("display-duration");
     const inputDuration = document.getElementById("input-duration");
     const inputDurationHidden = document.getElementById("input-duration-hidden");
     const btnMinusTime = document.getElementById("btn-minus-time");
     const btnPlusTime = document.getElementById("btn-plus-time");
 
-    //const displayAttendees = document.getElementById("display-attendees");
     const inputAttendees = document.getElementById("input-attendees");
     const inputAttendeesHidden = document.getElementById("input-attendees-hidden");
     const btnMinusPeople = document.getElementById("btn-minus-people");
     const btnPlusPeople = document.getElementById("btn-plus-people");
 
-    // === 2. ZMIENNE DOM - KALKULATOR ===
     const calcRoomRate = document.getElementById("calc-room-rate");
     const calcOrderTotal = document.getElementById("calc-order-total");
     const calcTax = document.getElementById("calc-tax");
     const calcTotal = document.getElementById("calc-total");
 
-    // === 3. ZMIENNE DOM - KOSZYK I MODAL MENU ===
     const orderList = document.getElementById("current-order-list");
     const hiddenProductsContainer = document.getElementById("hidden-products");
 
@@ -32,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnCartPlusAll = document.querySelectorAll(".btn-cart-plus");
     const btnCartMinusAll = document.querySelectorAll(".btn-cart-minus");
 
-    // === 4. STAN APLIKACJI (STATE) ===
     let currentDuration = 2;
     let currentAttendees = 2;
     let currentMaxCapacity = 2;
@@ -40,8 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let cart = {}; // Przechowuje stan koszyka: { id: { name, price, qty } }
 
     if (!roomSelect) return;
-
-    // === 5. GŁÓWNE FUNKCJE LOGICZNE ===
 
     function updateBookingState() {
         const selectedOption = roomSelect.options[roomSelect.selectedIndex];
@@ -116,8 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
         displayDuration.textContent = currentDuration;
         inputDurationHidden.value = currentDuration;
     }
-
-    // === 6. EVENT LISTENERY (OBSŁUGA INTERAKCJI) ===
 
     if (btnOpenMenuModal && menuModal) {
         btnOpenMenuModal.addEventListener("click", () => {
