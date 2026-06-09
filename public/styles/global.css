@@ -3,18 +3,16 @@
 }
 
 :root {
-  /* Główne kolory VocalVibe */
   --color-bg: #0b0a0f;
   --color-surface: #13121a;
   --color-surface-muted: #1c1a24;
   --color-text: #ffffff;
   --color-muted: #8e8c99;
-  --color-primary: #d946ef;       /* Neonowy fiolet/róż */
-  --color-primary-dark: #a21caf;  /* Ciemniejszy fiolet */
-  --color-secondary: #06b6d4;     /* Cyber błękit */
+  --color-primary: #d946ef;
+  --color-primary-dark: #a21caf;
+  --color-secondary: #06b6d4;
   --color-border: #252330;
 
-  /* Kolory statusów i alertów */
   --color-danger-bg: rgba(244, 63, 94, 0.1);
   --color-danger-text: #f43f5e;
   --occ-color: #f43f5e;
@@ -22,7 +20,6 @@
   --free-color: #10b981;
   --free-bg: rgba(16, 185, 129, 0.1);
 
-  /* Współdzielony Glassmorphism */
   --glass-bg: rgba(28, 26, 36, 0.4);
   --glass-border: rgba(255, 255, 255, 0.05);
   --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -56,7 +53,6 @@ main { width: 100%; }
    GLOBALNE KOMPONENTY (UTILITY CLASSES)
    ========================================================================== */
 
-/* 1. Tytuły Podstron z Gradientem */
 .page-title {
   font-size: 1.6rem;
   font-weight: 800;
@@ -67,7 +63,6 @@ main { width: 100%; }
   -webkit-text-fill-color: transparent;
 }
 
-/* 2. Szklane Karty (Glassmorphism) - dodawaj tę klasę w HTML! */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
@@ -86,13 +81,12 @@ main { width: 100%; }
   box-shadow: 0 8px 24px rgba(168, 85, 247, 0.1);
 }
 
-/* 3. Globalna Wyszukiwarka */
 .search-wrap {
   flex: 1;
-  max-width: 400px; /* lub 100%, jak wolisz */
+  max-width: 400px;
   height: 42px;
   display: flex;
-  flex-direction: row !important; /* <--- TA LINIJKA NAPRAWIA WSZYSTKO */
+  flex-direction: row !important;
   align-items: center;
   gap: 10px;
   background: var(--color-surface-muted);
@@ -122,7 +116,6 @@ main { width: 100%; }
   min-height: 0 !important;
 }
 
-/* 4. Globalne Badge Statusów */
 .status-badge {
   padding: 4px 10px;
   border-radius: 20px;
