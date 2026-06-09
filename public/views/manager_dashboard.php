@@ -1,36 +1,23 @@
 <?php
-/**
- * Panel Managera — VocalVibe
- * Umieść ten plik w: src/views/manager_dashboard.php
- *
- * Zmienne dostępne z kontrolera:
- *   $rooms          — tablica wszystkich pokoi
- *   $activeBookings — tablica aktywnych rezerwacji (z user_email, room_name, order_items JSON)
- *   $bookingsByRoom — tablica rezerwacji indeksowana room_id
- *   $stats          — ['total', 'occupied', 'free', 'revenue']
- */
 $serverDate = date('l, d F Y');
 $serverTime = date('H:i:s');
 ?>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php include __DIR__ . '/partials/head.html'; ?>
+    <link rel="stylesheet" type="text/css" href="/public/styles/global.css" />
+    <link rel="stylesheet" type="text/css" href="/public/styles/pages/manager_dashboard.css" />
     <title>VocalVibe — Panel Managera</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/styles/pages/manager_dashboard.css">
 </head>
 <body>
 
 <div class="grid-bg" aria-hidden="true"></div>
 
-<!-- ─── TOP BAR ─────────────────────────────────────────────── -->
 <header class="top-bar">
     <div class="top-bar__brand">
-        <span class="brand-glyph" aria-hidden="true">◈</span>
+        <i class="fa-solid fa-microphone-lines brand-glyph" aria-hidden="true"></i>
         <div>
             <span class="brand-name">VOCALVIBE</span>
             <span class="brand-role">PANEL MANAGERA</span>
@@ -47,34 +34,35 @@ $serverTime = date('H:i:s');
             <span class="refresh-dot"></span>
             <span>Odświeżenie za&nbsp;</span><span id="refresh-countdown">60</span><span>s</span>
         </div>
-        <button class="btn-action btn-refresh" onclick="forceRefresh()">&#8635; Odśwież</button>
-        <a href="/logout" class="btn-action btn-logout">Wyloguj</a>
+        <button class="btn-action btn-refresh" onclick="forceRefresh()">
+            <i class="fa-solid fa-rotate-right" style="margin-right: 6px;"></i> Odśwież
+        </button>
+        <a href="/logout" class="btn-action btn-logout">
+            <i class="fa-solid fa-arrow-right-from-bracket" style="margin-right: 6px;"></i> Wyloguj
+        </a>
     </div>
 </header>
 
 <main class="mgr-main">
-
-    <!-- ─── STATS BAR ──────────────────────────────────────── -->
     <section class="stats-bar" aria-label="Statystyki">
-        <div class="stat-card">
+        <article class="stat-card glass-card">
             <span class="stat-val"><?= (int)$stats['total'] ?></span>
             <span class="stat-lbl">Wszystkie pokoje</span>
-        </div>
-        <div class="stat-card stat-card--occ">
+        </article>
+        <article class="stat-card glass-card stat-card--occ">
             <span class="stat-val"><?= (int)$stats['occupied'] ?></span>
             <span class="stat-lbl">Zajęte</span>
-        </div>
-        <div class="stat-card stat-card--free">
+        </article>
+        <article class="stat-card glass-card stat-card--free">
             <span class="stat-val"><?= (int)$stats['free'] ?></span>
             <span class="stat-lbl">Wolne</span>
-        </div>
-        <div class="stat-card stat-card--rev">
+        </article>
+        <article class="stat-card glass-card stat-card--rev">
             <span class="stat-val"><?= number_format((float)$stats['revenue'], 2, ',', '&nbsp;') ?>&nbsp;zł</span>
             <span class="stat-lbl">Aktywne rezerwacje łącznie</span>
-        </div>
+        </article>
     </section>
 
-    <!-- ─── CONTROLS ───────────────────────────────────────── -->
     <div class="controls-bar">
         <div class="filter-tabs" role="tablist" aria-label="Filtruj pokoje">
             <button class="ftab ftab--active" data-filter="all"      role="tab" aria-selected="true">Wszystkie</button>
@@ -82,12 +70,11 @@ $serverTime = date('H:i:s');
             <button class="ftab"               data-filter="free"     role="tab" aria-selected="false">Wolne</button>
         </div>
         <label class="search-wrap" aria-label="Szukaj pokoju lub gościa">
-            <span class="search-icon" aria-hidden="true">&#9906;</span>
-            <input type="search" id="search-input" placeholder="Szukaj pokoju lub adresu e-mail…" autocomplete="off">
+            <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+            <input type="search" id="search-input" placeholder="Szukaj pokoju lub adresu e-mail..." autocomplete="off">
         </label>
     </div>
 
-    <!-- ─── ROOMS GRID ─────────────────────────────────────── -->
     <section class="rooms-grid" id="rooms-grid" aria-label="Pokoje">
 
         <?php foreach ($rooms as $room): ?>
@@ -97,7 +84,6 @@ $serverTime = date('H:i:s');
             $isOccupied = ($booking !== null);
             $statusKey  = $isOccupied ? 'occupied' : 'free';
 
-            // Parse products JSON from json_agg()
             $products = [];
             if ($booking && !empty($booking['order_items'])) {
                 $decoded = json_decode($booking['order_items'], true);
@@ -106,23 +92,21 @@ $serverTime = date('H:i:s');
                 }
             }
 
-            // Formatted session times
             $tStart = $booking ? date('H:i', strtotime($booking['start_time'])) : null;
             $tEnd   = $booking ? date('H:i', strtotime($booking['end_time']))   : null;
             $tDate  = $booking ? date('d.m.Y', strtotime($booking['start_time'])) : null;
 
-            // Duration in hours
             $durH = null;
             if ($booking) {
                 $durH = round((strtotime($booking['end_time']) - strtotime($booking['start_time'])) / 3600);
             }
             ?>
             <article
-                class="room-card room-card--<?= $statusKey ?>"
-                data-status="<?= $statusKey ?>"
-                data-room-name="<?= strtolower(htmlspecialchars($room['name'])) ?>"
-                data-guest="<?= $booking ? strtolower(htmlspecialchars($booking['user_email'])) : '' ?>"
-                aria-label="Pokój <?= htmlspecialchars($room['name']) ?>, <?= $isOccupied ? 'zajęty' : 'wolny' ?>"
+                    class="room-card glass-card room-card--<?= $statusKey ?>"
+                    data-status="<?= $statusKey ?>"
+                    data-room-name="<?= strtolower(htmlspecialchars($room['name'])) ?>"
+                    data-guest="<?= $booking ? strtolower(htmlspecialchars($booking['user_email'])) : '' ?>"
+                    aria-label="Pokój <?= htmlspecialchars($room['name']) ?>, <?= $isOccupied ? 'zajęty' : 'wolny' ?>"
             >
                 <div class="room-card__stripe" aria-hidden="true"></div>
 
@@ -132,17 +116,16 @@ $serverTime = date('H:i:s');
                         <h2 class="room-title"><?= htmlspecialchars($room['name']) ?></h2>
                     </div>
                     <span class="status-badge status-badge--<?= $statusKey ?>">
-                        <?= $isOccupied ? '● ZAJĘTE' : '○ WOLNE' ?>
+                        <?= $isOccupied ? 'Zajęte' : 'Wolne' ?>
                     </span>
                 </header>
 
                 <div class="room-meta">
-                    <span class="room-meta__tag">&#128101; <?= (int)$room['capacity'] ?> os.</span>
-                    <span class="room-meta__tag">&#128176; <?= number_format((float)$room['hourly_rate'], 2, ',', '.') ?> zł/h</span>
+                    <span class="room-meta__tag"><i class="fa-solid fa-user-group" style="margin-right: 4px;"></i> <?= (int)$room['capacity'] ?> os.</span>
+                    <span class="room-meta__tag"><i class="fa-solid fa-coins" style="margin-right: 4px;"></i> <?= number_format((float)$room['hourly_rate'], 2, ',', '.') ?> zł/h</span>
                 </div>
 
                 <?php if ($isOccupied && $booking): ?>
-                    <!-- BOOKING DETAILS -->
                     <div class="booking-block">
                         <div class="binfo-grid">
                             <div class="bfield">
@@ -173,7 +156,7 @@ $serverTime = date('H:i:s');
 
                         <?php if (!empty($products)): ?>
                             <div class="bar-order">
-                                <span class="bar-order__label">&#127867; Zamówienie barowe</span>
+                                <span class="bar-order__label"><i class="fa-solid fa-martini-glass-citrus" style="margin-right: 4px;"></i> Zamówienie barowe</span>
                                 <ul class="bar-order__list">
                                     <?php foreach ($products as $p): ?>
                                         <li class="bar-item">
@@ -191,10 +174,9 @@ $serverTime = date('H:i:s');
                     </div>
 
                 <?php else: ?>
-                    <!-- FREE STATE -->
                     <div class="free-state">
                         <span class="free-pulse" aria-hidden="true"></span>
-                        Pokój dostępny do rezerwacji
+                        <i class="fa-regular fa-circle-check" style="margin-right: 6px;"></i> Pokój dostępny do rezerwacji
                     </div>
                 <?php endif; ?>
 
@@ -203,8 +185,7 @@ $serverTime = date('H:i:s');
 
     </section>
 
-    <!-- ─── BOOKINGS TABLE ─────────────────────────────────── -->
-    <section class="table-section" aria-label="Wszystkie aktywne rezerwacje">
+    <section class="table-section glass-card" aria-label="Wszystkie aktywne rezerwacje">
         <div class="table-section__head">
             <h2 class="section-title">
                 Aktywne rezerwacje
@@ -214,7 +195,7 @@ $serverTime = date('H:i:s');
 
         <?php if (empty($activeBookings)): ?>
             <div class="empty-state">
-                <span class="empty-glyph" aria-hidden="true">&#9678;</span>
+                <i class="fa-solid fa-folder-open empty-glyph" aria-hidden="true"></i>
                 <p>Brak aktywnych rezerwacji</p>
             </div>
 

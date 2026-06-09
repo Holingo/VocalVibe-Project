@@ -2,11 +2,13 @@
 
 require_once 'src/controllers/SecurityController.php';
 require_once 'src/controllers/DashboardController.php';
-require_once 'src/controllers/UsersController.php';
 require_once __DIR__.'/src/controllers/BookingController.php';
 require_once __DIR__.'/src/controllers/OrderController.php';
 require_once __DIR__.'/src/controllers/ManagerController.php';
 
+/**
+ * Klasa odpowiedzialna za rejestrację tras oraz przekierowywanie żądań do odpowiednich kontrolerów.
+ */
 class Routing {
     private static $instances = [];
     public static $routes = [
@@ -30,14 +32,6 @@ class Routing {
             "controller" => "SecurityController",
             "action" => "register"
         ],
-        "search" => [
-            "controller" => "UsersController",
-            "action" => "search"
-        ],
-        "delete-user" => [
-            "controller" => "UsersController",
-            "action" => "delete"
-        ],
         "available-hours" => [
             "controller" => "BookingController",
             "action" => "getAvailableHours"
@@ -46,7 +40,7 @@ class Routing {
             "controller" => "BookingController",
             "action" => "create"
         ],
-        "booking-cancel" => [
+        "booking/cancel" => [
             "controller" => "BookingController",
             "action" => "cancel"
         ],
@@ -62,8 +56,15 @@ class Routing {
             "controller" => "ManagerController",
             "action" => "index"
         ],
+        "menu" => [
+            "controller" => "OrderController",
+            "action" => "menu"
+        ],
     ];
 
+    /**
+     * Zwraca lub tworzy pojedynczą instancję żądanego kontrolera (wzorzec Singleton dla obiektów kontrolerów).
+     */
     private static function getControllerInstance(string $className) {
         if (!array_key_exists($className, self::$instances)) {
             self::$instances[$className] = new $className();
@@ -71,21 +72,19 @@ class Routing {
         return self::$instances[$className];
     }
 
+    /**
+     * Główna funkcja uruchamiająca proces dopasowywania adresu URL do zarejestrowanej ścieżki.
+     */
     public static function run(string $path) {
-        // Logika pobierania ścieżki
         $path = trim($path, '/');
-
-        // UWAGA: Twój router dzieli ścieżkę po ukośnikach:
         $pathParts = explode('/', $path);
 
-        // Zbudujmy pełny actionKey dla tras wielopoziomowych (np. order/add)
         $actionKey = $pathParts[0];
         if (isset($pathParts[1]) && !preg_match('/^[0-9]+$/', $pathParts[1])) {
             $actionKey = $pathParts[0] . '/' . $pathParts[1];
         }
 
         $id = null;
-        // Jeśli trzeci lub drugi element jest liczbą, traktujemy go jako ID (np. order/add/5)
         if (isset($pathParts[1]) && preg_match('/^[0-9]+$/', $pathParts[1])) {
             $id = (int)$pathParts[1];
         } elseif (isset($pathParts[2]) && preg_match('/^[0-9]+$/', $pathParts[2])) {
@@ -97,10 +96,10 @@ class Routing {
             $actionName = self::$routes[$actionKey]["action"];
 
             $controllerObj = self::getControllerInstance($controllerName);
-
             $controllerObj->$actionName($id);
         } else {
-            include 'public/views/404.html';
+            http_response_code(404);
+            include 'public/views/404.php';
         }
     }
 }

@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // AKTUALIZACJA INTERFEJSU BEZ PRZEŁADOWANIA STRONY:
                 updateUI(result.orderSummary);
             } else {
                 alert(result.error || 'Wystąpił błąd podczas aktualizacji zamówienia.');
@@ -28,52 +27,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI(orderSummary) {
-        // 1. Zresetuj najpierw wszystkie cyfry na kafelkach produktów do 0
-        document.querySelectorAll('.counter-controls span').forEach(span => span.textContent = '0');
+        // 1. Resetujemy wszystkie liczniki na kafelkach produktów do 0
+        document.querySelectorAll('.cart-item-qty').forEach(span => span.textContent = '0');
 
-        // 2. Wyczyść boczny paragon rezerwacji
-        if (orderListContainer) orderListContainer.innerHTML = '';
+        // 2. Czyszczenie listy na paragonie bocznym
+        if (!orderListContainer) return;
+        orderListContainer.innerHTML = '';
+
         let totalSum = 0;
 
-        // 3. Przejdź przez zaktualizowaną listę przedmiotów z bazy danych
         if (orderSummary && orderSummary.length > 0) {
             orderSummary.forEach(item => {
                 const qty = parseInt(item.quantity);
                 const price = parseFloat(item.total);
                 totalSum += price;
 
-                // Zaktualizuj liczbę sztuk na właściwym kafelku w menu
-                const qtySpan = document.querySelector(`.btn-cart-plus[data-product-id="${item.product_id}"]`)
-                    ?.parentElement.querySelector('span');
-                if (qtySpan) {
-                    qtySpan.textContent = qty;
+                // Aktualizacja cyfry na kafelku danego produktu
+                const productQtySpan = document.getElementById(`product-qty-${item.product_id}`);
+                if (productQtySpan) {
+                    productQtySpan.textContent = qty;
                 }
 
-                // Dodaj nowy element na boczny paragon HTML
-                if (orderListContainer) {
-                    orderListContainer.innerHTML += `
-                        <li>
-                            <span class="qty">${qty}x</span>
-                            <span class="name">${escapeHtml(item.name)}</span>
-                            <span class="price">PLN ${price.toFixed(2)}</span>
-                        </li>
-                    `;
-                }
+                // Dodawanie elementu do paragonu
+                orderListContainer.innerHTML += `
+                    <li id="receipt-item-${item.product_id}">
+                        <span class="qty">${qty}x</span>
+                        <span class="name">${escapeHtml(item.name)}</span>
+                        <span class="price">PLN ${price.toFixed(2)}</span>
+                    </li>
+                `;
             });
         } else {
-            if (orderListContainer) {
-                orderListContainer.innerHTML = '<li class="empty-state" style="color: #9ca3af; font-size: 0.85rem; font-style: italic;">Brak zamówień barowych.</li>';
-            }
+            orderListContainer.innerHTML = '<li class="empty-receipt-notice">Brak zamówień barowych.</li>';
         }
 
-        // 4. Zaktualizuj całkowitą sumę w PLN na dole paragonu
+        // 3. Aktualizacja sumy końcowej
         if (totalAmountContainer) {
             totalAmountContainer.textContent = `PLN ${totalSum.toFixed(2)}`;
         }
     }
 
     function escapeHtml(string) {
-        return String(string).replace(/[&<>"']/g, function (s) {
+        return String(string).replace(/[&<>\"']/g, function (s) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s];
         });
     }

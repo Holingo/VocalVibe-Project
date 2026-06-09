@@ -1,19 +1,6 @@
-/**
- * manager_dashboard.js
- * Umieść w: public/js/manager_dashboard.js
- *
- * Funkcje:
- *  - Żywy zegar (sekundy)
- *  - Odliczanie do automatycznego odświeżenia (60 s)
- *  - Zakładki filtrowania (Wszystkie / Zajęte / Wolne)
- *  - Wyszukiwanie po nazwie pokoju lub e-mailu gościa
- *  - Stagger animation dla kart przy ładowaniu strony
- */
-
 (function () {
     'use strict';
 
-    /* ── LIVE CLOCK ─────────────────────────────────────────────── */
     const clockEl = document.getElementById('live-clock');
     const dateEl  = document.getElementById('live-date');
 
@@ -42,7 +29,6 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    /* ── AUTO-REFRESH COUNTDOWN ─────────────────────────────────── */
     const countdownEl = document.getElementById('refresh-countdown');
     let countdown = 60;
 
@@ -56,12 +42,10 @@
 
     setInterval(tick, 1000);
 
-    /** Ręczne odświeżenie — dostępne globalnie dla przycisku onclick */
     window.forceRefresh = function () {
         window.location.reload();
     };
 
-    /* ── FILTER LOGIC ───────────────────────────────────────────── */
     let currentFilter = 'all';
     let currentSearch = '';
 
@@ -103,7 +87,6 @@
         }
     }
 
-    /* Filter tabs */
     document.querySelectorAll('.ftab').forEach(function (tab) {
         tab.addEventListener('click', function () {
             document.querySelectorAll('.ftab').forEach(function (t) {
@@ -118,7 +101,6 @@
         });
     });
 
-    /* Search input */
     var searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', function () {
@@ -126,7 +108,6 @@
             applyFilters();
         });
 
-        /* Wyczyść wyszukiwanie klawiszem Escape */
         searchInput.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 this.value = '';
@@ -136,18 +117,15 @@
         });
     }
 
-    /* ── STAGGER ANIMATION ──────────────────────────────────────── */
     var cards = document.querySelectorAll('.room-card');
     cards.forEach(function (card, idx) {
         card.style.animationDelay = (idx * 0.05) + 's';
     });
 
-    /* ── KEYBOARD SHORTCUT: / → focus search ────────────────────── */
     document.addEventListener('keydown', function (e) {
         if (e.key === '/' && document.activeElement !== searchInput) {
             e.preventDefault();
             if (searchInput) searchInput.focus();
         }
     });
-
 }());

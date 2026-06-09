@@ -3,13 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const roomSelect = document.getElementById("room-select");
     const bookButtons = document.querySelectorAll(".btn-book:not(.btn-add-cart)");
 
-    const displayDuration = document.getElementById("display-duration");
+    //const displayDuration = document.getElementById("display-duration");
     const inputDuration = document.getElementById("input-duration");
     const inputDurationHidden = document.getElementById("input-duration-hidden");
     const btnMinusTime = document.getElementById("btn-minus-time");
     const btnPlusTime = document.getElementById("btn-plus-time");
 
-    const displayAttendees = document.getElementById("display-attendees");
+    //const displayAttendees = document.getElementById("display-attendees");
     const inputAttendees = document.getElementById("input-attendees");
     const inputAttendeesHidden = document.getElementById("input-attendees-hidden");
     const btnMinusPeople = document.getElementById("btn-minus-people");

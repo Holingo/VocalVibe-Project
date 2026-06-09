@@ -4,39 +4,42 @@ require_once 'AppController.php';
 require_once __DIR__.'/../repositories/BookingRepository.php';
 require_once __DIR__.'/../repositories/RoomsRepository.php';
 
+/**
+ * Kontroler zarządzający panelem managera lokalu, statystykami obłożenia sal oraz aktywnymi rezerwacjami.
+ */
 class ManagerController extends AppController {
 
     private BookingRepository $bookingRepository;
     private RoomsRepository $roomsRepository;
 
     public function __construct() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
         $this->bookingRepository = new BookingRepository();
         $this->roomsRepository   = new RoomsRepository();
     }
 
+    /**
+     * Główna akcja panelu managera – pobiera dane sal, oblicza przychód i weryfikuje uprawnienia administratora.
+     */
     public function index() {
+        $this->ensureAuthenticated();
+
         if (!isset($_SESSION['role_name']) || $_SESSION['role_name'] !== 'Manager') {
             header("Location: /dashboard");
-            die();
+            exit();
         }
 
         $allRooms       = $this->roomsRepository->getRooms();
         $activeBookings = $this->bookingRepository->getAllActiveBookings();
-
-        // Index bookings by room_id for O(1) lookup in the view
         $bookingsByRoom = [];
         foreach ($activeBookings as $booking) {
             $bookingsByRoom[(int)$booking['room_id']] = $booking;
         }
 
-        // Quick stats for the header bar
-        $totalRooms   = count($allRooms);
+        $totalRooms    = count($allRooms);
         $occupiedCount = count($activeBookings);
         $totalRevenue  = array_sum(array_column($activeBookings, 'total_price'));
 
+        // Wywołanie renderowania z dokładnym zachowaniem Twoich kluczy i nazw zmiennych
         $this->render('manager_dashboard', [
             'rooms'          => $allRooms,
             'activeBookings' => $activeBookings,

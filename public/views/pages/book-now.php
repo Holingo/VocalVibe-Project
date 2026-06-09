@@ -14,18 +14,18 @@
                                 <h2><?= htmlspecialchars($room["name"]); ?></h2>
                                 <span class="room-rating">
                                     <i class="fa-solid fa-star" style="color: #fbbf24; margin-right: 4px;"></i>
-                                    <?= $room["rating"] ?? '4.5'; ?>
+                                    <?= htmlspecialchars($room["rating"] ?? '4.5'); ?>
                                 </span>
                             </div>
 
                             <p class="room-desc">
                                 <i class="fa-solid fa-users" style="margin-right: 4px;"></i>
-                                Do <?= $room["capacity"]; ?> os.
+                                Do <?= (int)$room["capacity"]; ?> os.
                                 <span class="dot-separator">•</span> <?= htmlspecialchars($room["description"]); ?>
                             </p>
 
                             <div class="room-footer">
-                                <span class="room-price">PLN <?= number_format($room["hourly_rate"], 2); ?><span class="unit">/hr</span></span>
+                                <span class="room-price">PLN <?= number_format($room["hourly_rate"], 2); ?><span class="unit">/godz.</span></span>
 
                                 <button class="btn-book" type="button" data-room-id="<?= $room["id"]; ?>">
                                     Rezerwuj Teraz
@@ -73,7 +73,7 @@
                     <select class="custom-select" id="booking-time" name="booking_time" required>
                         <?php if (isset($available_hours)): ?>
                             <?php foreach ($available_hours as $dbValue => $displayValue): ?>
-                                <option value="<?= $dbValue ?>"><?= $displayValue ?></option>
+                                <option value="<?= htmlspecialchars($dbValue) ?>"><?= htmlspecialchars($displayValue) ?></option>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </select>
@@ -82,7 +82,7 @@
                 <div class="form-group row-group">
                     <label>Liczba gości</label>
                     <div class="counter-widget">
-                        <span class="attendees-text"><span id="display-attendees">2</span> Osób</span>
+                        <span class="attendees-text"></span>Osób</span>
                         <div class="counter-controls">
                             <button type="button" id="btn-minus-people">−</button>
                             <input type="hidden" id="input-attendees-hidden" name="attendees" value="2">
@@ -95,7 +95,7 @@
                 <div class="form-group row-group">
                     <label>Czas trwania</label>
                     <div class="counter-widget">
-                        <span class="duration-text"><span id="display-duration">2</span> Godzin</span>
+                        <span class="duration-text"></span>Godzin</span>
                         <div class="counter-controls">
                             <button type="button" id="btn-minus-time">−</button>
                             <input type="hidden" id="input-duration-hidden" name="duration" value="2">
@@ -148,29 +148,29 @@
             <h2>Dodaj przekąski i napoje do rezerwacji</h2>
             <button type="button" id="btn-close-modal" class="btn-close">&times;</button>
         </div>
-        <div class="modal-body rooms-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+
+        <div class="modal-body modal-products-grid">
             <?php if(isset($products) && is_array($products)): ?>
                 <?php foreach($products as $product): ?>
                     <div class="room-card" style="padding: 1rem; background: rgba(19, 18, 26, 0.6);">
                         <?php if(!empty($product['image_url'])): ?>
-                            <img src="<?= htmlspecialchars($product['image_url']) ?>" style="width:100%; height:120px; object-fit:cover; border-radius: 10px; margin-bottom: 0.75rem;" onerror="this.src='public/img/products/default.jpg'">
+                            <img src="<?= htmlspecialchars($product['image_url']) ?>" style="width:100%; height:120px; object-fit:cover; border-radius: 10px; margin-bottom: 0.75rem;">
                         <?php endif; ?>
                         <h3 style="margin: 0 0 0.4rem 0; font-size: 1rem; color:#fff; text-align: center;"><?= htmlspecialchars($product['name']) ?></h3>
                         <p style="margin: 0 0 1rem 0; color: #9ca3af; font-size: 0.85rem; text-align: center; line-height: 1.3; flex-grow: 1;"><?= htmlspecialchars($product['description'] ?? '') ?></p>
 
-                        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: auto; align-items: center;">
-                            <span style="font-weight: 700; color: #fff; text-align: center; font-size: 1.05rem;">PLN <?= number_format($product['price'], 2) ?></span>
+                        <div class="modal-counter-widget">
+                            <button type="button" class="btn-cart-minus modal-counter-btn"
+                                    data-id="<?= $product['id'] ?>"
+                                    data-name="<?= htmlspecialchars($product['name']) ?>"
+                                    data-price="<?= $product['price'] ?>">-</button>
 
-                            <div class="counter-widget" style="width: 100%; justify-content: space-between; padding: 2px;">
-                                <div class="counter-controls" style="width: 100%; justify-content: space-between;">
-                                    <button type="button" class="btn-cart-minus" data-id="<?= $product['id'] ?>">−</button>
-                                    <span class="cart-item-qty" id="modal-qty-<?= $product['id'] ?>" style="line-height: 32px; color: #fff; font-weight: 700;">0</span>
-                                    <button type="button" class="btn-cart-plus"
-                                            data-id="<?= $product['id'] ?>"
-                                            data-name="<?= htmlspecialchars($product['name']) ?>"
-                                            data-price="<?= $product['price'] ?>">+</button>
-                                </div>
-                            </div>
+                            <span class="cart-item-qty modal-counter-qty" id="modal-qty-<?= $product['id'] ?>">0</span>
+
+                            <button type="button" class="btn-cart-plus modal-counter-btn"
+                                    data-id="<?= $product['id'] ?>"
+                                    data-name="<?= htmlspecialchars($product['name']) ?>"
+                                    data-price="<?= $product['price'] ?>">+</button>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -180,5 +180,3 @@
         </div>
     </div>
 </div>
-
-<script src="public/scripts/book-now.js"></script>

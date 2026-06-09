@@ -2,9 +2,12 @@
 
 require_once __DIR__."/../../Database.php";
 
-class Repository {
+/**
+ * Główna klasa abstrakcyjna dla wszystkich repozytoriów, dostarczająca instancję połączenia z bazą danych.
+ */
+abstract class Repository {
 
-    protected $database;
+    protected Database $database;
 
     public function __construct() {
         $this->database = new Database();

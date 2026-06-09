@@ -1,89 +1,131 @@
 <?php
+
 require_once 'Repository.php';
 
+/**
+ * Repozytorium odpowiedzialne za bezpieczne operacje bazodanowe na zamówieniach barowych (koszyku produktów).
+ */
 class OrderRepository extends Repository {
 
-    public function getOrderSummary(int $bookingId) {
+    /**
+     * Pobiera szczegółowe podsumowanie pozycji rachunku barowego dla konkretnej rezerwacji.
+     */
+    public function getOrderSummary(int $bookingId): array {
         $stmt = $this->database->connect()->prepare('
-            SELECT p.id as product_id, p.name, oi.quantity, oi.unit_price, (oi.quantity * oi.unit_price) as total
+            SELECT 
+                p.id AS product_id, 
+                p.name, 
+                oi.quantity, 
+                oi.unit_price, 
+                (oi.quantity * oi.unit_price) AS total
             FROM order_items oi
             JOIN orders o ON oi.order_id = o.id
             JOIN products p ON oi.product_id = p.id
             WHERE o.booking_id = :bId
             ORDER BY p.name ASC
         ');
+
         $stmt->execute(['bId' => $bookingId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function addItemToOrder(int $bookingId, int $productId, int $quantity = 1) {
+    /**
+     * Dodaje produkt do zamówienia danej rezerwacji (tworzy koszyk lub zwiększa ilość pozycji).
+     */
+    public function addItemToOrder(int $bookingId, int $productId, int $quantity = 1): bool {
         $db = $this->database->connect();
+
         try {
             $db->beginTransaction();
 
-            // 1. Sprawdź, czy zamówienie dla tej rezerwacji istnieje
+            // 1. Sprawdzenie, czy istnieje już powiązany rekord w tabeli orders
             $stmt = $db->prepare('SELECT id FROM orders WHERE booking_id = :bId');
             $stmt->execute(['bId' => $bookingId]);
             $order = $stmt->fetch(PDO::FETCH_ASSOC);
             $orderId = $order ? $order['id'] : null;
 
+            // Jeśli zamówienie nie istnieje, następuje jego bezpieczna rejestracja
             if (!$orderId) {
                 $stmt = $db->prepare('INSERT INTO orders (booking_id) VALUES (:bId) RETURNING id');
                 $stmt->execute(['bId' => $bookingId]);
-                $orderId = $stmt->fetchColumn();
+                $orderId = $stmt->fetch(PDO::FETCH_ASSOC)['id'];
             }
 
-            // 2. SPRAWDZENIE: Czy produkt już jest w tym zamówieniu?
+            // 2. Pobranie aktualnej ceny katalogowej przypisanej do produktu
+            $stmt = $db->prepare('SELECT price FROM products WHERE id = :pId');
+            $stmt->execute(['pId' => $productId]);
+            $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$product) {
+                $db->rollBack();
+                return false;
+            }
+            $unitPrice = $product['price'];
+
+            // 3. Weryfikacja, czy dany produkt znajduje się już na liście pozycji zamówienia
             $stmt = $db->prepare('SELECT id, quantity FROM order_items WHERE order_id = :oId AND product_id = :pId');
             $stmt->execute(['oId' => $orderId, 'pId' => $productId]);
             $existingItem = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($existingItem) {
-                // Jeśli istnieje, zwiększamy ilość
                 $stmt = $db->prepare('UPDATE order_items SET quantity = quantity + :qty WHERE id = :id');
                 $stmt->execute(['qty' => $quantity, 'id' => $existingItem['id']]);
             } else {
-                // Jeśli nie istnieje, wstawiamy nowy rekord
                 $stmt = $db->prepare('
                     INSERT INTO order_items (order_id, product_id, quantity, unit_price) 
-                    VALUES (:oId, :pId, :qty, (SELECT price FROM products WHERE id = :pId))
+                    VALUES (:oId, :pId, :qty, :price)
                 ');
-                $stmt->execute(['oId' => $orderId, 'pId' => $productId, 'qty' => $quantity]);
+                $stmt->execute([
+                    'oId' => $orderId,
+                    'pId' => $productId,
+                    'qty' => $quantity,
+                    'price' => $unitPrice
+                ]);
             }
 
             $db->commit();
             return true;
         } catch (Exception $e) {
             $db->rollBack();
+            error_log("OrderRepository Error (addItem): " . $e->getMessage());
             return false;
         }
     }
 
-    public function removeItemFromOrder(int $bookingId, int $productId) {
+    /**
+     * Zmniejsza ilość wybranego produktu o 1 sztukę lub całkowicie usuwa go z rachunku rezerwacji.
+     */
+    public function removeItemFromOrder(int $bookingId, int $productId): bool {
         $db = $this->database->connect();
+
         try {
             $db->beginTransaction();
 
-            // 1. Znajdź ID zamówienia
+            // 1. Pobranie identyfikatora zamówienia głównego
             $stmt = $db->prepare('SELECT id FROM orders WHERE booking_id = :bId');
             $stmt->execute(['bId' => $bookingId]);
             $order = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$order) return false;
+
+            if (!$order) {
+                $db->rollBack();
+                return false;
+            }
             $orderId = $order['id'];
 
-            // 2. Znajdź pozycję w koszyku
+            // 2. Pobranie powiązanej pozycji z tabeli elementów składowych zamówienia
             $stmt = $db->prepare('SELECT id, quantity FROM order_items WHERE order_id = :oId AND product_id = :pId');
             $stmt->execute(['oId' => $orderId, 'pId' => $productId]);
             $item = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$item) return false;
+            if (!$item) {
+                $db->rollBack();
+                return false;
+            }
 
             if ($item['quantity'] > 1) {
-                // Zmniejsz o 1
                 $stmt = $db->prepare('UPDATE order_items SET quantity = quantity - 1 WHERE id = :id');
                 $stmt->execute(['id' => $item['id']]);
             } else {
-                // Usuń całkowicie z bazy
                 $stmt = $db->prepare('DELETE FROM order_items WHERE id = :id');
                 $stmt->execute(['id' => $item['id']]);
             }
@@ -92,6 +134,7 @@ class OrderRepository extends Repository {
             return true;
         } catch (Exception $e) {
             $db->rollBack();
+            error_log("OrderRepository Error (removeItem): " . $e->getMessage());
             return false;
         }
     }

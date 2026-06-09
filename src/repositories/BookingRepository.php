@@ -2,8 +2,14 @@
 
 require_once 'Repository.php';
 
+/**
+ * Repozytorium odpowiedzialne za bezpieczne operacje bazodanowe na rezerwacjach sal karaoke.
+ */
 class BookingRepository extends Repository {
 
+    /**
+     * Pobiera wszystkie rezerwacje (historyczne i obecne) powiązane z ID danego użytkownika.
+     */
     public function getBookingsByUserId(int $userId): array {
         $stmt = $this->database->connect()->prepare('
             SELECT 
@@ -14,7 +20,7 @@ class BookingRepository extends Repository {
                 b.end_time,
                 b.total_price,
                 b.status,
-                b.attendees, -- Pobiera liczbę gości z tabeli bookings
+                b.attendees,
                 b.start_time::date AS booking_date, 
                 r.name as room_name, 
                 r.image_url 
@@ -28,6 +34,9 @@ class BookingRepository extends Repository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Pobiera pojedynczą rezerwację na podstawie jej identyfikatora głównego.
+     */
     public function getBookingById(int $id) {
         $stmt = $this->database->connect()->prepare('
             SELECT 
@@ -40,6 +49,9 @@ class BookingRepository extends Repository {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Pobiera szczegóły najbliższej, aktywnej rezerwacji klienta potrzebnej do obsługi zamówień barowych.
+     */
     public function getActiveBookingDetails(int $userId) {
         $stmt = $this->database->connect()->prepare('
             SELECT b.id, b.start_time, b.end_time, r.name as room_name 
@@ -52,6 +64,9 @@ class BookingRepository extends Repository {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Pobiera zajęte już godziny dla wybranego pokoju i dnia w celu walidacji terminów.
+     */
     public function getBookedHours(int $roomId, string $date): array {
         $stmt = $this->database->connect()->prepare('
             SELECT start_time, end_time 
@@ -86,23 +101,30 @@ class BookingRepository extends Repository {
         return array_unique($bookedHours);
     }
 
+    /**
+     * Pobiera zbiorczą listę wszystkich aktywnych rezerwacji w lokalu dla widoku managera.
+     */
     public function getAllActiveBookings(): array {
         $stmt = $this->database->connect()->prepare('
-        SELECT b.*, u.email as user_email, r.name as room_name,
-        (SELECT json_agg(items) FROM (
-            SELECT p.name, oi.quantity FROM order_items oi 
-            JOIN products p ON oi.product_id = p.id 
-            WHERE oi.order_id IN (SELECT id FROM orders WHERE booking_id = b.id)
-        ) items) as order_items
-        FROM bookings b
-        JOIN users u ON b.user_id = u.id
-        JOIN rooms r ON b.room_id = r.id
-        WHERE b.status = \'Active\'
-    ');
+            SELECT b.*, u.email as user_email, r.name as room_name,
+            (SELECT json_agg(items) FROM (
+                SELECT p.name, oi.quantity FROM order_items oi 
+                JOIN products p ON oi.product_id = p.id 
+                WHERE oi.order_id IN (SELECT id FROM orders WHERE booking_id = b.id)
+            ) items) as order_items
+            FROM bookings b
+            JOIN users u ON b.user_id = u.id
+            JOIN rooms r ON b.room_id = r.id
+            WHERE b.status = \'Active\'
+        ');
+
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Tworzy nowy rekord rezerwacji w systemie i zwraca wygenerowane ID wpisu.
+     */
     public function createBooking(int $userId, int $roomId, string $startTime, string $endTime, float $totalPrice, int $attendees = 2) {
         $stmt = $this->database->connect()->prepare('
             INSERT INTO bookings (user_id, room_id, start_time, end_time, total_price, attendees, status)
@@ -122,6 +144,9 @@ class BookingRepository extends Repository {
         return $stmt->fetchColumn();
     }
 
+    /**
+     * Bezpiecznie usuwa rezerwację oraz wszystkie skojarzone z nią zamówienia barowe (Transakcja ACID).
+     */
     public function deleteBooking(int $id): bool {
         $db = $this->database->connect();
         try {

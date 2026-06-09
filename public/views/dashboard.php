@@ -15,7 +15,14 @@ if (!in_array($page, $allowedPages)) {
     <link rel="stylesheet" type="text/css" href="public/styles/pages/my-bookings.css" />
     <link rel="stylesheet" type="text/css" href="public/styles/pages/menu.css" />
 
-    <script src="public/js/menu.js" defer></script>
+    <?php if ($page === 'menu'): ?>
+        <script src="public/scripts/menu.js" defer></script>
+    <?php elseif ($page === 'book-now'): ?>
+        <script src="public/scripts/book-now.js" defer></script>
+    <?php elseif ($page === 'my-bookings'): ?>
+        <script src="public/scripts/my-bookings.js" defer></script>
+    <?php endif; ?>
+
     <title>VocalVibe - Panel Klienta</title>
 </head>
 <body class="dashboard-page">

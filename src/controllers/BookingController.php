@@ -4,6 +4,9 @@ require_once 'AppController.php';
 require_once __DIR__.'/../repositories/BookingRepository.php';
 require_once __DIR__.'/../repositories/RoomsRepository.php';
 
+/**
+ * Kontroler obsługujący operacje związane z rezerwacjami sal (sprawdzanie godzin, tworzenie oraz anulowanie sesji).
+ */
 class BookingController extends AppController {
 
     private $bookingRepository;
@@ -14,6 +17,9 @@ class BookingController extends AppController {
         $this->roomsRepository = new RoomsRepository();
     }
 
+    /**
+     * Zwraca dostępne sloty godzinowe dla wybranej sali i daty (obsługuje żądania fetch w formacie JSON).
+     */
     public function getAvailableHours() {
         header('Content-type: application/json');
 
@@ -50,40 +56,34 @@ class BookingController extends AppController {
         echo json_encode($availableHours);
     }
 
+    /**
+     * Obsługuje proces zapisu nowej rezerwacji sali wraz z ewentualnymi produktami barowymi.
+     */
     public function create() {
         if (!$this->isPost()) {
             header("Location: /dashboard");
             return;
         }
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: /login");
-            return;
-        }
+        $this->ensureAuthenticated();
         $userId = (int)$_SESSION['user_id'];
 
         $roomId = (int)($_POST['room_id'] ?? 0);
         $bookingDate = $_POST['booking_date'] ?? null;
         $bookingTime = $_POST['booking_time'] ?? null;
         $duration = (int)($_POST['duration'] ?? 2);
-        $attendees = (int)($_POST['attendees'] ?? 2); // Zmieniono domyślną na 2 (zgodnie ze stanem skryptu)
+        $attendees = (int)($_POST['attendees'] ?? 2);
 
         if (!$roomId || !$bookingDate || !$bookingTime || $duration < 1 || $attendees < 1) {
             header("Location: /dashboard?page=book-now&error=missing_data");
             return;
         }
 
-        // Obliczanie czasu sesji
         $startTimestamp = strtotime("$bookingDate $bookingTime");
         $endTimestamp = $startTimestamp + ($duration * 3600);
         $startTimeFormatted = date('Y-m-d H:i:s', $startTimestamp);
         $endTimeFormatted = date('Y-m-d H:i:s', $endTimestamp);
 
-        // Walidacja pokoju i jego pojemności
         $selectedRoom = null;
         foreach ($this->roomsRepository->getRooms() as $r) {
             if ((int)$r['id'] === $roomId) {
@@ -97,7 +97,6 @@ class BookingController extends AppController {
             return;
         }
 
-        // Walidacja dostępności slotów
         $bookedHours = $this->bookingRepository->getBookedHours($roomId, $bookingDate);
         for ($i = 0; $i < $duration; $i++) {
             $checkTime = date('H:00', $startTimestamp + ($i * 3600));
@@ -107,10 +106,8 @@ class BookingController extends AppController {
             }
         }
 
-        // Cena bazowa doliczająca 8% VAT
         $totalPrice = ((float)$selectedRoom['hourly_rate'] * $duration) * 1.08;
 
-        // POPRAWKA: Przekazujemy $attendees jako szósty parametr do bazy
         $bookingId = $this->bookingRepository->createBooking(
             $userId,
             $roomId,
@@ -121,7 +118,6 @@ class BookingController extends AppController {
         );
 
         if ($bookingId) {
-            // Zapis produktów barowych zamówionych przy rezerwacji
             $products = $_POST['products'] ?? [];
             if (!empty($products)) {
                 require_once __DIR__.'/../repositories/OrderRepository.php';
@@ -139,22 +135,16 @@ class BookingController extends AppController {
         }
     }
 
+    /**
+     * Anuluje wybraną rezerwację użytkownika w oparciu o weryfikację uprawnień i czasu sesji (Endpoint API).
+     */
     public function cancel() {
         if (!$this->isPost()) {
             http_response_code(405);
             return;
         }
 
-        // POPRAWKA: Inicjalizacja sesji, aby sprawdzić zalogowanego użytkownika
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['user_id'])) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Użytkownik niezalogowany']);
-            return;
-        }
+        $this->ensureAuthenticated();
 
         $input = json_decode(file_get_contents('php://input'), true);
         if (!isset($input['booking_id'])) {
@@ -165,7 +155,6 @@ class BookingController extends AppController {
 
         $bookingId = (int)$input['booking_id'];
         $bookingRepository = new BookingRepository();
-
         $booking = $bookingRepository->getBookingById($bookingId);
 
         if (!$booking || (int)$booking['user_id'] !== (int)$_SESSION['user_id']) {
@@ -174,7 +163,6 @@ class BookingController extends AppController {
             return;
         }
 
-        // Walidacja czasu (blokujemy anulowanie rezerwacji, które trwają lub są z przeszłości)
         $bookingStart = strtotime($booking['start_time']);
         if ($bookingStart <= time()) {
             http_response_code(400);

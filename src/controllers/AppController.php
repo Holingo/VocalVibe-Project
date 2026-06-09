@@ -1,18 +1,28 @@
 <?php
 
+/**
+ * Główny kontroler abstrakcyjny, dostarczający metody pomocnicze dla wszystkich kontrolerów w aplikacji.
+ */
 abstract class AppController {
-    protected function isGet(): bool
-    {
+
+    /**
+     * Sprawdza, czy bieżące żądanie protokołu HTTP zostało wysłane metodą GET.
+     */
+    protected function isGet(): bool {
         return $_SERVER["REQUEST_METHOD"] === 'GET';
     }
 
-    protected function isPost(): bool
-    {
+    /**
+     * Sprawdza, czy bieżące żądanie protokołu HTTP zostało wysłane metodą POST.
+     */
+    protected function isPost(): bool {
         return $_SERVER["REQUEST_METHOD"] === 'POST';
     }
 
-    protected function ensureAuthenticated(): void
-    {
+    /**
+     * Weryfikuje, czy użytkownik jest zalogowany. W przypadku braku sesji przekierowuje do ekranu logowania.
+     */
+    protected function ensureAuthenticated(): void {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -23,27 +33,23 @@ abstract class AppController {
         }
     }
 
+    /**
+     * Odpowiada za dynamiczne generowanie widoku strony oraz przekazywanie do niego zmiennych z kontrolera.
+     */
     protected function render(string $template = null, array $variables = []) {
-        $templatePath = 'public/views/'. $template.'.php';
+        $templatePath = 'public/views/' . $template . '.php';
+
         if (!file_exists($templatePath)) {
-            $templatePath = 'public/views/'. $template.'.html';
+            http_response_code(404);
+            $templatePath = 'public/views/404.php';
         }
 
-        $templatePath404 = 'public/views/404.php';
-        if (!file_exists($templatePath404)) {
-            $templatePath404 = 'public/views/404.html';
-        }
+        extract($variables); // Oskar ~ Ekstrakcja zmiennych oraz bezpieczne renderowanie z użyciem bufora wyjściowego
 
-        if(file_exists($templatePath)){
-            extract($variables);
-            ob_start();
-            include $templatePath;
-            $output = ob_get_clean();
-        } else {
-            ob_start();
-            include $templatePath404;
-            $output = ob_get_clean();
-        }
+        ob_start();
+        include $templatePath;
+        $output = ob_get_clean();
+
         echo $output;
     }
 }
