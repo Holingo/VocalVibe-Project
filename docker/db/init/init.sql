@@ -121,6 +121,21 @@ FROM bookings b
          JOIN users u ON b.user_id = u.id
 WHERE b.status = 'Active';
 
+
+--- Logika dodawania użytkownika jako role klient.
+CREATE OR REPLACE FUNCTION assign_default_client_role()
+RETURNS TRIGGER AS $$
+BEGIN
+INSERT INTO user_roles (user_id, role_id) VALUES (NEW.id, 1);
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_assign_default_role
+    AFTER INSERT ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION assign_default_client_role();
+
 -- 6. Dane testowe
 INSERT INTO roles (name) VALUES ('Client'), ('Manager');
 
