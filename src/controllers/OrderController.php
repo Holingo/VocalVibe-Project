@@ -39,8 +39,6 @@ class OrderController extends AppController {
             foreach ($bookings as $b) {
                 $status = isset($b['status']) ? strtolower(trim($b['status'])) : '';
 
-                // POPRAWKA: Akceptujemy statusy 'active' oraz 'confirmed'
-                // (ponieważ rezerwacja przed rozpoczęciem imprezy ma status Confirmed)
                 if ($status === 'active' || $status === 'confirmed') {
                     $activeBooking = $b;
                     break; // Znaleziono pasującą rezerwację
@@ -152,8 +150,6 @@ class OrderController extends AppController {
             echo json_encode(['error' => 'Błąd usuwania z bazy danych']);
         }
     }
-
-    /* --- METODY POMOCNICZE (ZWIĘKSZENIE PRZEJRZYSTOŚCI) --- */
 
     private function getLoggedInUserIdOrRespond() {
         if (session_status() === PHP_SESSION_NONE) {
