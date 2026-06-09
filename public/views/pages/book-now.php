@@ -43,6 +43,18 @@
     <aside class="booking-sidebar">
         <form id="booking-form" action="/booking-create" method="POST">
 
+            <?php if (isset($_GET['error'])): ?>
+                <div class="messages" style="margin-bottom: 1.25rem;">
+                    <?php
+                    if ($_GET['error'] === 'slot_taken') echo '<i class="fa-solid fa-triangle-exclamation"></i> Wybrany termin jest już częściowo lub całkowicie zajęty przez kogoś innego.';
+                    elseif ($_GET['error'] === 'missing_data') echo '<i class="fa-solid fa-triangle-exclamation"></i> Wypełnij wszystkie wymagane pola.';
+                    elseif ($_GET['error'] === 'invalid_room_data') echo '<i class="fa-solid fa-triangle-exclamation"></i> Przekroczono limit osób dla wybranej sali.';
+                    elseif ($_GET['error'] === 'db_failed') echo '<i class="fa-solid fa-triangle-exclamation"></i> Błąd bazy danych. Spróbuj ponownie.';
+                    else echo '<i class="fa-solid fa-triangle-exclamation"></i> Wystąpił błąd podczas rezerwacji.';
+                    ?>
+                </div>
+            <?php endif; ?>
+
             <section class="sidebar-section">
                 <h3><i class="fa-solid fa-sliders" style="color: #a855f7;"></i> Konfiguracja sesji</h3>
 

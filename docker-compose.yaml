@@ -30,6 +30,8 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+    environment:
+        - TZ=Europe/Warsaw
     volumes:
       - .:/app
     networks:

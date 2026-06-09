@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const roomSelect = document.getElementById("room-select");
+    const dateInput = document.getElementById("booking-date");
+    const timeSelect = document.getElementById("booking-time");
     const bookButtons = document.querySelectorAll(".btn-book:not(.btn-add-cart)");
 
     const inputDuration = document.getElementById("input-duration");
@@ -99,14 +101,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateAttendeesView() {
         inputAttendees.textContent = currentAttendees;
-        displayAttendees.textContent = currentAttendees;
+        //displayAttendees.textContent = currentAttendees;
         inputAttendeesHidden.value = currentAttendees;
     }
 
     function updateDurationView() {
         inputDuration.textContent = currentDuration;
-        displayDuration.textContent = currentDuration;
+        //displayDuration.textContent = currentDuration;
         inputDurationHidden.value = currentDuration;
+    }
+
+    async function fetchAvailableHours() {
+        if (!roomSelect || !dateInput || !timeSelect) return;
+
+        const roomId = roomSelect.value;
+        const date = dateInput.value;
+
+        if (!roomId || !date) return;
+
+        try {
+            // Uderzamy do Twojego istniejącego endpointu w BookingController
+            const response = await fetch('/available-hours', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_id: roomId, date: date })
+            });
+
+            if (response.ok) {
+                const availableHours = await response.json();
+
+                // Czyścimy obecną listę
+                timeSelect.innerHTML = '';
+
+                // Sprawdzamy czy coś jest wolne
+                if (availableHours.length === 0) {
+                    timeSelect.innerHTML = '<option value="" disabled selected>Brak wolnych godzin w tym dniu</option>';
+                } else {
+                    // Generujemy nowe, tylko wolne opcje
+                    availableHours.forEach(hour => {
+                        const option = document.createElement('option');
+                        option.value = hour.value;
+                        option.textContent = hour.label;
+                        timeSelect.appendChild(option);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Błąd pobierania godzin z serwera:", error);
+        }
     }
 
     if (btnOpenMenuModal && menuModal) {
@@ -155,6 +197,23 @@ document.addEventListener("DOMContentLoaded", () => {
         button.addEventListener("click", (e) => {
             const roomId = e.target.getAttribute("data-room-id");
             roomSelect.value = roomId;
+
+            // Odśwież godziny, gdy gracz zmienia datę
+            if (dateInput) {
+                dateInput.addEventListener("change", fetchAvailableHours);
+            }
+
+            // Odśwież godziny, gdy gracz zmienia salę z listy rozwijanej
+            if (roomSelect) {
+                roomSelect.addEventListener("change", () => {
+                    updateBookingState();
+                    fetchAvailableHours();
+                });
+            }
+
+            // Odśwież listę przy pierwszym załadowaniu strony
+            fetchAvailableHours();
+
             updateBookingState();
 
             if (window.innerWidth < 1100) {

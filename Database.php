@@ -37,6 +37,7 @@ class Database {
             );
 
             self::$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            self::$connection->exec("SET TIME ZONE 'Europe/Warsaw'");
             return self::$connection;
         } catch (PDOException $e) {
             die("Połączenie z bazą danych nie powiodło się: " . $e->getMessage());
