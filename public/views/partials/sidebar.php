@@ -12,9 +12,9 @@
             <i class="fa-solid fa-mug-hot"></i>
         </a>
 
-        <a href="/dashboard?page=loyalty" class="nav-item <?= $page === 'loyalty' ? 'active' : '' ?>" title="Moje Konto">
+        <!--<a href="/dashboard?page=loyalty" class="nav-item <?= $page === 'loyalty' ? 'active' : '' ?>" title="Moje Konto">
             <i class="fa-regular fa-user"></i>
-        </a>
+        </a>-->
     </div>
 
     <div class="sidebar-bottom">
